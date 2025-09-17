@@ -1,18 +1,17 @@
 package com.pms.repository;
 
 import com.pms.dto.ProjectStatsResponse;
+import com.pms.dto.RevenueShareProjection;
 import com.pms.entity.Project;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
-    @Query("select p from Project p order by p.datetimeCreated desc")
-    Page<Project> getProjectsOrderByDatetimeCreated(Pageable pageable);
-
     @Query("""
         SELECT new com.pms.dto.ProjectStatsResponse(
             COUNT(p),
@@ -29,11 +28,22 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> getProjectsByStatusInAndYear(List<String> statuses, Integer year);
 
     @Query(value = """
-        SELECT name FROM projects
-        WHERE type = :type AND (CAST(strftime('%Y', start_date / 1000, 'unixepoch') as INTEGER) = :year OR CAST(strftime('%Y', end_date / 1000, 'unixepoch') as INTEGER) = :year)
-        ORDER BY revenue DESC
-    """, nativeQuery = true)
-    List<String> getProjectNamesByTypeAndYear(String type, Integer year);
+        SELECT 
+            type,
+            ROUND(100.0 * SUM(revenue) / (
+                SELECT SUM(revenue)
+                FROM projects
+                WHERE CAST(strftime('%Y', start_date / 1000, 'unixepoch') AS INTEGER) = :year
+                   OR CAST(strftime('%Y', end_date / 1000, 'unixepoch') AS INTEGER) = :year
+            ), 2) AS present,
+            GROUP_CONCAT(name) AS projectNames
+        FROM projects
+        WHERE CAST(strftime('%Y', start_date / 1000, 'unixepoch') AS INTEGER) = :year
+           OR CAST(strftime('%Y', end_date / 1000, 'unixepoch') AS INTEGER) = :year
+        GROUP BY type
+        ORDER BY SUM(revenue) DESC
+        """, nativeQuery = true)
+    List<RevenueShareProjection> findRevenueShareByYear(Integer year);
 
     @Query(value = """
         SELECT SUM(revenue) FROM projects 
@@ -45,4 +55,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> getProjectsByStatusAndYear(String status, Integer year);
 
 
+    Page<Project> findAll(Specification<Project> filter, Pageable pageable);
 }

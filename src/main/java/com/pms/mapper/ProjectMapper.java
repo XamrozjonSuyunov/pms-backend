@@ -3,10 +3,9 @@ package com.pms.mapper;
 import com.pms.dto.*;
 import com.pms.entity.Project;
 import com.pms.enums.ProjectStatus;
-import com.pms.enums.ProjectType;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
+import java.util.Arrays;
 
 import static com.pms.util.Utils.calculateProgress;
 import static com.pms.util.Utils.generateMonthlySales;
@@ -67,18 +66,11 @@ public class ProjectMapper {
                 .build();
     }
 
-    public ProjectPlanResponse toProjectPlanResponse(PlanResponse plan, Long currentRevenue) {
+    public ProjectPlanResponse toProjectPlanResponse(Integer year, PlanResponse plan, Long currentRevenue) {
         return ProjectPlanResponse.builder()
-                .year(plan.year())
-                .totalRevenue(plan.revenue())
-                .currentRevenue(currentRevenue)
-                .build();
-    }
-
-    public TopRevenueRatioResponse toTopRevenueRatioResponse(ProjectType type, List<String> pmNames) {
-        return TopRevenueRatioResponse.builder()
-                .type(type)
-                .projectNames(pmNames)
+                .year(year)
+                .totalRevenue(plan != null ? plan.revenue() : 0)
+                .currentRevenue(currentRevenue != null ? currentRevenue : 0)
                 .build();
     }
 
@@ -87,5 +79,13 @@ public class ProjectMapper {
         var percentDifference = planRate - project.getActualRate();
 
         return new ProjectDelayedPMResponse(project.getPmName(), percentDifference);
+    }
+
+    public TopRevenueRatioResponse toTopRevenueRatioResponse(RevenueShareProjection revenueShareProjection) {
+        return TopRevenueRatioResponse.builder()
+                .type(revenueShareProjection.getType())
+                .present(revenueShareProjection.getPresent())
+                .projectNames(Arrays.stream(revenueShareProjection.getProjectNames().split(",")).limit(4).toList())
+                .build();
     }
 }

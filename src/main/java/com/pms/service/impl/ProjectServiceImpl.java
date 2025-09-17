@@ -3,13 +3,13 @@ package com.pms.service.impl;
 import com.pms.dto.*;
 import com.pms.entity.Project;
 import com.pms.enums.ProjectStatus;
-import com.pms.enums.ProjectType;
 import com.pms.exception.ErrorCode;
 import com.pms.exception.ErrorMessageException;
 import com.pms.mapper.ProjectMapper;
 import com.pms.repository.ProjectRepository;
 import com.pms.service.PlanService;
 import com.pms.service.ProjectService;
+import com.pms.specification.ProjectSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public Page<ProjectResponse> getProjects(ProjectFilter filter) {
-        return repository.getProjectsOrderByDatetimeCreated(filter.toPageable())
+        return repository.findAll(ProjectSpecification.filter(filter), filter.toPageable())
                 .map(mapper::toProjectResponse);
     }
 
@@ -114,12 +114,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<TopRevenueRatioResponse> getTopRevenueRatiosForYear(Integer year) {
-        return Arrays.stream(ProjectType.values()).map(type -> mapTypeToTopRevenueRatio(type, year)).toList();
-    }
-
-    private TopRevenueRatioResponse mapTypeToTopRevenueRatio(ProjectType type, Integer year) {
-        final List<String> projectNames = repository.getProjectNamesByTypeAndYear(type.name(), year);
-        return mapper.toTopRevenueRatioResponse(type, projectNames);
+        return repository.findRevenueShareByYear(year).stream()
+                .map(mapper::toTopRevenueRatioResponse).toList();
     }
 
     @Override
@@ -127,7 +123,7 @@ public class ProjectServiceImpl implements ProjectService {
         var plan = planService.getPlan(year);
         var currentRevenue = repository.getRevenueByStatusAndYear(ProjectStatus.COMPLETED.name(), year);
 
-        return mapper.toProjectPlanResponse(plan, currentRevenue);
+        return mapper.toProjectPlanResponse(year, plan, currentRevenue);
     }
 
     @Override
