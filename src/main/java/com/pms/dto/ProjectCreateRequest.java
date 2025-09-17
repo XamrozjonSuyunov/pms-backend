@@ -19,6 +19,7 @@ public record ProjectCreateRequest(
         LocalDate endDate,
         @NotNull(message = "Working days is required")
         Integer workingDays,
+        @NotNull(message = "pmName is required")
         String pmName
 ) {
 }

@@ -13,7 +13,6 @@ public record ProjectUpdateRequest(
         LocalDate startDate,
         LocalDate endDate,
         Integer workingDays,
-        Integer plannedRate,
         Integer actualRate,
         String pmName
 ) {

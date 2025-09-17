@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("select p from Project p order by p.datetimeCreated desc")
     Page<Project> getProjectsOrderByDatetimeCreated(Pageable pageable);
@@ -22,4 +24,25 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
         FROM Project p
     """)
     ProjectStatsResponse getProjectStats();
+
+    @Query(value = "SELECT * FROM projects WHERE status in (:statuses) AND (CAST(strftime('%Y', start_date / 1000, 'unixepoch') as INTEGER) = :year OR CAST(strftime('%Y', end_date / 1000, 'unixepoch') as INTEGER) = :year)", nativeQuery = true)
+    List<Project> getProjectsByStatusInAndYear(List<String> statuses, Integer year);
+
+    @Query(value = """
+        SELECT name FROM projects
+        WHERE type = :type AND (CAST(strftime('%Y', start_date / 1000, 'unixepoch') as INTEGER) = :year OR CAST(strftime('%Y', end_date / 1000, 'unixepoch') as INTEGER) = :year)
+        ORDER BY revenue DESC
+    """, nativeQuery = true)
+    List<String> getProjectNamesByTypeAndYear(String type, Integer year);
+
+    @Query(value = """
+        SELECT SUM(revenue) FROM projects 
+        WHERE status = ?1 AND (CAST(strftime('%Y', start_date / 1000, 'unixepoch') as INTEGER) = :year OR CAST(strftime('%Y', end_date / 1000, 'unixepoch') as INTEGER) = :year)
+    """, nativeQuery = true)
+    Long getRevenueByStatusAndYear(String status, Integer year);
+
+    @Query(value = "SELECT * FROM projects WHERE status = :status AND (CAST(strftime('%Y', start_date / 1000, 'unixepoch') as INTEGER) = :year OR CAST(strftime('%Y', end_date / 1000, 'unixepoch') as INTEGER) = :year)", nativeQuery = true)
+    List<Project> getProjectsByStatusAndYear(String status, Integer year);
+
+
 }
