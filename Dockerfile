@@ -19,6 +19,7 @@ RUN ./gradlew build -x test
 
 # Copy the built JAR file
 RUN cp build/libs/pms-backend-0.0.1-SNAPSHOT.jar app.jar
+RUN mkdir -p /app/data
 
 EXPOSE 8080
 
