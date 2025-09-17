@@ -87,6 +87,7 @@ public class ProjectController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Get project plan by year")
     @GetMapping("/plan")
     public ResponseEntity<ProjectPlanResponse> getProjectPlan(@RequestParam Integer year) {
         var response = projectService.getProjectPlanForYear(year);
