@@ -15,8 +15,8 @@ public class Utils {
 
     public static Integer calculateProgress(LocalDate startDate, LocalDate endDate) {
         var today = LocalDate.now();
-        var totalDays = ChronoUnit.DAYS.between(startDate, endDate);
-        var elapsedDays = ChronoUnit.DAYS.between(startDate, today);
+        var totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        var elapsedDays = ChronoUnit.DAYS.between(startDate, today) + 1;
 
         if (totalDays <= 0) return 100; // startDate = endDate
         return Math.min(100, Math.max(0, ((int) Math.floor((double) elapsedDays / totalDays)) * 100));

@@ -35,7 +35,7 @@ public class ProjectMapper {
                 .name(request.name())
                 .type(request.type())
                 .revenue(request.revenue())
-                .status(ProjectStatus.ONGOING)
+                .status(ProjectStatus.PLANNED)
                 .startDate(request.startDate())
                 .endDate(request.endDate())
                 .workingDays(request.workingDays())

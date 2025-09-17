@@ -1,5 +1,5 @@
 package com.pms.enums;
 
 public enum ProjectStatus {
-    DELAYED, COMPLETED, ONGOING, DROPPED
+    PLANNED, ONGOING, DELAYED, COMPLETED, DROPPED
 }
